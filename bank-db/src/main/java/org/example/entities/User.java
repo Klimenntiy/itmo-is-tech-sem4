@@ -14,6 +14,7 @@ import java.util.Set;
 @Getter
 @Setter
 public class User {
+    @Getter
     private final String login;
     private String name;
     private int age;

@@ -13,8 +13,10 @@ import java.util.List;
 @Getter
 @ToString
 public class Account {
+    @Getter
     private final String id;
     private final String ownerLogin;
+    @Getter
     @Setter
     private double balance;
     private final List<TransactionHistory> transactions = new ArrayList<>();
@@ -91,4 +93,5 @@ public class Account {
     private String generateId() {
         return "ACC" + System.currentTimeMillis();
     }
+
 }

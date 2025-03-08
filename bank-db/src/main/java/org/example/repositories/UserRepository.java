@@ -40,7 +40,7 @@ public class UserRepository {
      * @return true if the user exists, otherwise false
      */
     public boolean exists(String login) {
-        return !users.containsKey(login);
+        return users.containsKey(login);
     }
 
     /**
