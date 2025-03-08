@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class Lab1Test {
+class TestLab1 {
 
     @Mock
     private AccountRepository accountRepository;
@@ -32,7 +32,7 @@ class Lab1Test {
 
         assertEquals(300, account.getBalance());
         verify(accountRepository).saveAccount(account);
-        assertEquals("Withdrawal successful! New balance: 300.0", result.getMessage());
+        assertEquals("Withdrawal successful! New balance: 300.0", result.message());
     }
 
     @org.junit.jupiter.api.Test
@@ -56,6 +56,6 @@ class Lab1Test {
 
         assertEquals(300, account.getBalance());
         verify(accountRepository).saveAccount(account);
-        assertEquals("Deposit successful! New balance: 300.0", result.getMessage());
+        assertEquals("Deposit successful! New balance: 300.0", result.message());
     }
 }

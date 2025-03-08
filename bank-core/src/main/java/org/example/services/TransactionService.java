@@ -79,7 +79,7 @@ public class TransactionService {
         }
 
         return account.getTransactionHistory().stream()
-                .map(tx -> new TransactionHistoryDTO(tx.getType(), tx.getAmount(), tx.getNewBalance()))
+                .map(tx -> new TransactionHistoryDTO(tx.type(), tx.amount(), tx.newBalance()))
                 .collect(Collectors.toList());
     }
 }

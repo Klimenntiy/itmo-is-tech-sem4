@@ -153,12 +153,12 @@ public class Menu {
         } else {
             System.out.println("\n=== User List ===");
             for (UserDTO user : users) {
-                System.out.println("Login: " + user.getLogin());
-                System.out.println("Name: " + user.getName());
-                System.out.println("Age: " + user.getAge());
-                System.out.println("Gender: " + user.getGender());
-                System.out.println("Hair Color: " + user.getHairColor());
-                System.out.println("Friends: " + (user.getFriends().isEmpty() ? "No friends" : user.getFriends()));
+                System.out.println("Login: " + user.login());
+                System.out.println("Name: " + user.name());
+                System.out.println("Age: " + user.age());
+                System.out.println("Gender: " + user.gender());
+                System.out.println("Hair Color: " + user.hairColor());
+                System.out.println("Friends: " + (user.friends().isEmpty() ? "No friends" : user.friends()));
                 System.out.println("---------------------------");
             }
         }
@@ -174,8 +174,8 @@ public class Menu {
         } else {
             System.out.println("Accounts for user " + login + ":");
             for (AccountDTO account : accounts) {
-                System.out.println("ID: " + account.getId() +
-                        ", Balance: " + account.getBalance());
+                System.out.println("ID: " + account.id() +
+                        ", Balance: " + account.balance());
             }
         }
     }
@@ -190,9 +190,9 @@ public class Menu {
         } else {
             System.out.println("Transaction history for account " + accountId + ":");
             for (TransactionHistoryDTO tx : transactions) {
-                System.out.println("Type: " + tx.getType() +
-                        ", Amount: " + tx.getAmount() +
-                        ", Balance after transaction: " + tx.getNewBalance());
+                System.out.println("Type: " + tx.type() +
+                        ", Amount: " + tx.amount() +
+                        ", Balance after transaction: " + tx.newBalance());
             }
         }
     }
