@@ -1,26 +1,47 @@
 package org.example.entities;
 
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.enums.Gender;
-import org.example.enums.HairColor;
+import org.example.entities.enums.Gender;
+import org.example.entities.enums.HairColor;
 
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Represents a user in the system.
+ * Represents a user entity.
  */
+@Entity
+@Table(name = "users")
 @Getter
 @Setter
+@NoArgsConstructor
 public class User {
-    @Getter
-    private final String login;
+
+    @Id
+    @Column(nullable = false, unique = true)
+    private String login;
+
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
     private int age;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Gender gender;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private HairColor hairColor;
-    private final Set<String> friends = new HashSet<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_friends", joinColumns = @JoinColumn(name = "user_login"))
+    @Column(name = "friend_login")
+    private Set<String> friends = new HashSet<>();
 
     /**
      * Constructs a new user.
@@ -40,22 +61,22 @@ public class User {
     }
 
     /**
+     * Checks if the given user is a friend.
+     *
+     * @param otherUser The user to check friendship with.
+     * @return {@code true} if the given user is a friend, otherwise {@code false}.
+     */
+    public boolean isFriend(User otherUser) {
+        return this.friends.contains(otherUser.getLogin());
+    }
+
+    /**
      * Adds a friend to the user's friend list.
      *
      * @param friendLogin The login of the friend to add.
      */
     public void addFriend(String friendLogin) {
         friends.add(friendLogin);
-    }
-
-    /**
-     * Checks if another user is a friend of the current user.
-     *
-     * @param otherUser The other user to check.
-     * @return true if the user is a friend, false otherwise.
-     */
-    public boolean isFriend(User otherUser) {
-        return friends.contains(otherUser.getLogin());
     }
 
     /**

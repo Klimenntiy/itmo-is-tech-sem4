@@ -1,67 +1,83 @@
 package org.example.repositories;
 
-import lombok.Getter;
+import org.example.HibernateUtil;
 import org.example.entities.Account;
+import org.example.entities.TransactionHistory;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
-import java.util.*;
+import java.util.List;
 
 /**
- * Repository for managing bank accounts.
- * <p>
- * This class provides basic CRUD operations for managing accounts,
- * including adding, retrieving, updating, and checking account existence.
- * It uses an in-memory storage (HashMap) to manage accounts.
+ * Repository class for interacting with the Account and TransactionHistory entities.
+ * Provides methods to add, get, and update accounts, as well as saving transaction histories.
  */
-@Getter
 public class AccountRepository {
-    private final Map<String, Account> accounts = new HashMap<>();
 
     /**
-     * Adds a new account to the repository.
-     * If an account with the same ID already exists, it will be overwritten.
+     * Adds a new account to the database.
      *
-     * @param account The account to add.
+     * @param account the account to be added
      */
     public void addAccount(Account account) {
-        accounts.put(account.getId(), account);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            session.persist(account);
+            transaction.commit();
+        }
     }
 
     /**
-     * Retrieves an account by its unique identifier.
+     * Retrieves an account by its ID.
      *
-     * @param id The account ID.
-     * @return The account if found, otherwise {@code null}.
+     * @param id the ID of the account to retrieve
+     * @return the account with the specified ID
      */
     public Account getAccount(String id) {
-        return accounts.get(id);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("FROM Account a LEFT JOIN FETCH a.transactions WHERE a.id = :id", Account.class)
+                    .setParameter("id", id)
+                    .uniqueResult();
+        }
     }
 
     /**
      * Retrieves all accounts associated with a specific user.
      *
-     * @param userLogin The user's login identifier.
-     * @return A list of accounts owned by the specified user.
-     *         If the user has no accounts, an empty list is returned.
+     * @param userLogin the login of the user whose accounts to retrieve
+     * @return a list of accounts associated with the given user login
      */
     public List<Account> getAccountsByUser(String userLogin) {
-        List<Account> userAccounts = new ArrayList<>();
-        for (Account account : accounts.values()) {
-            if (account.getOwnerLogin().equals(userLogin)) {
-                userAccounts.add(account);
-            }
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("FROM Account WHERE ownerLogin = :login", Account.class)
+                    .setParameter("login", userLogin)
+                    .list();
         }
-        return userAccounts;
     }
 
     /**
-     * Updates an existing account in the repository.
-     * If the account does not exist, this method does nothing.
+     * Updates an existing account in the database.
      *
-     * @param account The account to update.
+     * @param account the account to be updated
      */
     public void saveAccount(Account account) {
-        if (accounts.containsKey(account.getId())) {
-            accounts.put(account.getId(), account);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            session.merge(account);
+            transaction.commit();
+        }
+    }
+
+    /**
+     * Saves a transaction history record to the database.
+     *
+     * @param transaction the transaction history to be saved
+     */
+    public void saveTransactionHistory(TransactionHistory transaction) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
+            session.persist(transaction);
+            tx.commit();
         }
     }
 }

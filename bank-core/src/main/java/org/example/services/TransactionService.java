@@ -1,8 +1,10 @@
 package org.example.services;
 
 import lombok.RequiredArgsConstructor;
+import org.example.Results.Exceptions.AccountNotFoundException;
 import org.example.dto.TransactionHistoryDTO;
 import org.example.entities.Account;
+import org.example.entities.TransactionHistory;
 import org.example.entities.User;
 import org.example.repositories.AccountRepository;
 import org.example.repositories.UserRepository;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
  */
 @RequiredArgsConstructor
 public class TransactionService {
+
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
 
@@ -24,14 +27,14 @@ public class TransactionService {
      * @param senderId   ID of the sender's account.
      * @param receiverId ID of the receiver's account.
      * @param amount     Amount to be transferred.
+     * @throws AccountNotFoundException if one or both accounts are not found.
      */
     public void transferMoney(String senderId, String receiverId, double amount) {
         Account sender = accountRepository.getAccount(senderId);
         Account receiver = accountRepository.getAccount(receiverId);
 
         if (sender == null || receiver == null) {
-            System.out.println("Transaction failed: One or both accounts not found.");
-            return;
+            throw new AccountNotFoundException("One or both accounts not found.");
         }
 
         User senderUser = userRepository.getUser(sender.getOwnerLogin());
@@ -47,8 +50,12 @@ public class TransactionService {
             return;
         }
 
-        System.out.printf("Transaction successful. Total debited: %.2f (including commission: %.2f)%n",
-                totalAmount, commission);
+        if (commission > 0) {
+            accountRepository.saveTransactionHistory(new TransactionHistory("Commission", commission, sender.getBalance(), sender));
+        }
+
+        accountRepository.saveAccount(sender);
+        accountRepository.saveAccount(receiver);
     }
 
     /**
@@ -59,10 +66,7 @@ public class TransactionService {
      * @return The commission rate (0.0 - 10.0%).
      */
     private double determineCommissionRate(User sender, User receiver) {
-        if (sender.getLogin().equals(receiver.getLogin())) {
-            return 0.0;
-        }
-        return sender.isFriend(receiver) ? 0.03 : 0.10;
+        return sender.getLogin().equals(receiver.getLogin()) ? 0.0 : sender.isFriend(receiver) ? 0.03 : 0.10;
     }
 
     /**
@@ -70,16 +74,16 @@ public class TransactionService {
      *
      * @param accountId The ID of the account.
      * @return A list of transaction history records as DTOs.
+     * @throws AccountNotFoundException if the account is not found.
      */
     public List<TransactionHistoryDTO> getTransactionHistory(String accountId) {
         Account account = accountRepository.getAccount(accountId);
         if (account == null) {
-            System.out.println("Account not found.");
-            return List.of();
+            throw new AccountNotFoundException("Account not found.");
         }
 
-        return account.getTransactionHistory().stream()
-                .map(tx -> new TransactionHistoryDTO(tx.type(), tx.amount(), tx.newBalance()))
+        return account.getTransactions().stream()
+                .map(tx -> new TransactionHistoryDTO(tx.getType(), tx.getAmount(), tx.getNewBalance()))
                 .collect(Collectors.toList());
     }
 }

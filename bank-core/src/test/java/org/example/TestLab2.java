@@ -5,6 +5,7 @@ import org.example.entities.Account;
 import org.example.Results.Exceptions.InsufficientFundsException;
 import org.example.repositories.AccountRepository;
 import org.example.services.AccountService;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -14,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class TestLab1 {
+class TestLab2 {
 
     @Mock
     private AccountRepository accountRepository;
@@ -22,7 +23,7 @@ class TestLab1 {
     @InjectMocks
     private AccountService accountService;
 
-    @org.junit.jupiter.api.Test
+    @Test
     void withdrawMoney_SufficientBalance_ShouldUpdateBalance() {
         String accountId = "acc123";
         Account account = new Account("user123");
@@ -35,7 +36,7 @@ class TestLab1 {
         assertEquals("Withdrawal successful! New balance: 300.0", result.message());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void withdrawMoney_InsufficientBalance_ShouldThrowException() {
         String accountId = "acc123";
         Account account = new Account("user123");
@@ -46,7 +47,7 @@ class TestLab1 {
         verify(accountRepository, never()).saveAccount(account);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void depositMoney_ShouldUpdateBalance() {
         String accountId = "acc123";
         Account account = new Account("user123");
