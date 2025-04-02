@@ -21,8 +21,9 @@ public class UserRepository {
      * @param user the user to be added or updated
      */
     public void addUser(User user) {
+        Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
 
             User existingUser = session.get(User.class, user.getLogin());
             if (existingUser != null) {
@@ -38,6 +39,11 @@ public class UserRepository {
             }
 
             transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
         }
     }
 

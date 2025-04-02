@@ -61,10 +61,16 @@ public class AccountRepository {
      * @param account the account to be updated
      */
     public void saveAccount(Account account) {
+        Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             session.merge(account);
             transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
         }
     }
 
@@ -74,10 +80,17 @@ public class AccountRepository {
      * @param transaction the transaction history to be saved
      */
     public void saveTransactionHistory(TransactionHistory transaction) {
+        Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction tx = session.beginTransaction();
+            tx = session.beginTransaction();
             session.persist(transaction);
             tx.commit();
+        } catch (Exception e) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw e;
         }
     }
+
 }
