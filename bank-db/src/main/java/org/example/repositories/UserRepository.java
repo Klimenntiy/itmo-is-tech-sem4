@@ -4,6 +4,8 @@ import org.example.HibernateUtil;
 import org.example.entities.User;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -12,6 +14,8 @@ import java.util.List;
  * Provides methods to add, retrieve, and check users in the database.
  */
 public class UserRepository {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserRepository.class);
 
     /**
      * Adds or updates a user in the database.
@@ -43,6 +47,7 @@ public class UserRepository {
             if (transaction != null) {
                 transaction.rollback();
             }
+            logger.error("Failed to add or update user: {}", user, e);
             throw e;
         }
     }

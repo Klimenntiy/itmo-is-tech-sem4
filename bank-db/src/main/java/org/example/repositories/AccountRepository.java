@@ -5,6 +5,8 @@ import org.example.entities.Account;
 import org.example.entities.TransactionHistory;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -14,16 +16,25 @@ import java.util.List;
  */
 public class AccountRepository {
 
+    private static final Logger logger = LoggerFactory.getLogger(AccountRepository.class);
+
     /**
      * Adds a new account to the database.
      *
      * @param account the account to be added
      */
     public void addAccount(Account account) {
+        Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
             session.persist(account);
             transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            logger.error("Failed to add account: {}", account, e);
+            throw e;
         }
     }
 
@@ -70,6 +81,7 @@ public class AccountRepository {
             if (transaction != null) {
                 transaction.rollback();
             }
+            logger.error("Failed to update account: {}", account, e);
             throw e;
         }
     }
@@ -77,20 +89,20 @@ public class AccountRepository {
     /**
      * Saves a transaction history record to the database.
      *
-     * @param transaction the transaction history to be saved
+     * @param transactionHistory the transaction history to be saved
      */
-    public void saveTransactionHistory(TransactionHistory transaction) {
+    public void saveTransactionHistory(TransactionHistory transactionHistory) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.persist(transaction);
+            session.persist(transactionHistory);
             tx.commit();
         } catch (Exception e) {
             if (tx != null) {
                 tx.rollback();
             }
+            logger.error("Failed to save transaction history: {}", transactionHistory, e);
             throw e;
         }
     }
-
 }
