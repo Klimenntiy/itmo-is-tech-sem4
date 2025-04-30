@@ -9,6 +9,7 @@ import org.example.Klimenntiy.repository.AccountRepository;
 import org.example.Klimenntiy.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ public class AccountService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public void createAccount(String login) {
         if (!userRepository.existsByLogin(login)) {
             throw new AccountNotFoundException("User not found.");
@@ -32,6 +34,7 @@ public class AccountService {
         accountRepository.save(new Account(login));
     }
 
+    @Transactional
     public void depositMoney(Long accountId, double amount) {
         if (amount <= 0) {
             throw new InvalidAmountException("Deposit amount must be greater than zero.");
@@ -44,6 +47,7 @@ public class AccountService {
         accountRepository.save(account);
     }
 
+    @Transactional
     public void withdrawMoney(Long accountId, double amount) {
         if (amount <= 0) {
             throw new InvalidAmountException("Withdrawal amount must be greater than zero.");
