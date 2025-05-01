@@ -64,12 +64,14 @@ public class AccountService {
         accountRepository.save(account);
     }
 
+    @Transactional(readOnly = true)
     public double showBalance(Long accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found."));
         return account.getBalance();
     }
 
+    @Transactional(readOnly = true)
     public List<AccountDTO> getUserAccounts(String login) {
         if (!userRepository.existsByLogin(login)) {
             throw new AccountNotFoundException("User not found.");
@@ -80,6 +82,7 @@ public class AccountService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<AccountDTO> getAllAccounts() {
         return accountRepository.findAll().stream()
                 .map(account -> new AccountDTO(account.getId(), account.getOwnerLogin(), account.getBalance()))

@@ -12,6 +12,7 @@ import org.example.Klimenntiy.repository.TransactionHistoryRepository;
 import org.example.Klimenntiy.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ public class TransactionService {
         this.transactionHistoryRepository = transactionHistoryRepository;
     }
 
+    @Transactional
     public void transferMoney(Long senderId, Long receiverId, double amount) {
         Account sender = accountRepository.findById(senderId)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found."));
@@ -63,6 +65,7 @@ public class TransactionService {
         return sender.isFriend(receiver) ? 0.03 : 0.10;
     }
 
+    @Transactional(readOnly = true)
     public List<TransactionHistoryDTO> getTransactionHistory(Long accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found."));
@@ -72,6 +75,7 @@ public class TransactionService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<TransactionHistoryDTO> getTransactionsWithFilters(Long accountId, String type) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found."));

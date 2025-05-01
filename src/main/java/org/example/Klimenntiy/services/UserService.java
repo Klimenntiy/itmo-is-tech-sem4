@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 public class UserService {
 
@@ -20,6 +22,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public void createUser(UserDTO userDTO) {
         if (userRepository.existsByLogin(userDTO.login())) {
             throw new UserNotFoundException("User already exists.");
@@ -36,6 +39,7 @@ public class UserService {
         userRepository.save(newUser);
     }
 
+    @Transactional
     public void addFriend(String login, String friendLogin) {
         User user = getUserByLogin(login);
         User friend = getUserByLogin(friendLogin);
@@ -47,6 +51,7 @@ public class UserService {
         userRepository.save(friend);
     }
 
+    @Transactional
     public void removeFriend(String login, String friendLogin) {
         User user = getUserByLogin(login);
         User friend = getUserByLogin(friendLogin);
@@ -58,12 +63,14 @@ public class UserService {
         userRepository.save(friend);
     }
 
+    @Transactional(readOnly = true)
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<UserDTO> getFriendsByUserId(Long userId) {
         User user = getUserById(userId);
 
@@ -72,6 +79,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<UserDTO> getUsersWithFilters(String hairColor, String gender) {
         List<User> users = userRepository.findAll();
 
