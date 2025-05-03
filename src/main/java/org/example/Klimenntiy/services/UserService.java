@@ -3,14 +3,14 @@ package org.example.Klimenntiy.services;
 import org.example.Klimenntiy.dto.UserDTO;
 import org.example.Klimenntiy.entities.User;
 import org.example.Klimenntiy.exceptions.UserNotFoundException;
+import org.example.Klimenntiy.mappers.UserMapper;
 import org.example.Klimenntiy.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -66,7 +66,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(this::convertToDTO)
+                .map(UserMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -75,7 +75,7 @@ public class UserService {
         User user = getUserById(userId);
 
         return user.getFriends().stream()
-                .map(friendLogin -> convertToDTO(getUserByLogin(friendLogin)))
+                .map(friendLogin -> UserMapper.toDTO(getUserByLogin(friendLogin)))
                 .collect(Collectors.toList());
     }
 
@@ -96,7 +96,7 @@ public class UserService {
         }
 
         return users.stream()
-                .map(this::convertToDTO)
+                .map(UserMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -108,17 +108,5 @@ public class UserService {
     private User getUserByLogin(String login) {
         return userRepository.findByLogin(login)
                 .orElseThrow(() -> new UserNotFoundException("User not found."));
-    }
-
-    private UserDTO convertToDTO(User user) {
-        return new UserDTO(
-                user.getId(),
-                user.getLogin(),
-                user.getName(),
-                user.getAge(),
-                user.getGender(),
-                user.getHairColor(),
-                user.getFriends()
-        );
     }
 }

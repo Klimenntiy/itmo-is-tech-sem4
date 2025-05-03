@@ -5,6 +5,7 @@ import org.example.Klimenntiy.entities.Account;
 import org.example.Klimenntiy.exceptions.AccountNotFoundException;
 import org.example.Klimenntiy.exceptions.InsufficientFundsException;
 import org.example.Klimenntiy.exceptions.InvalidAmountException;
+import org.example.Klimenntiy.mappers.AccountMapper;
 import org.example.Klimenntiy.repository.AccountRepository;
 import org.example.Klimenntiy.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,14 +79,14 @@ public class AccountService {
         }
 
         return accountRepository.findByOwnerLogin(login).stream()
-                .map(account -> new AccountDTO(account.getId(), account.getOwnerLogin(), account.getBalance()))
+                .map(AccountMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<AccountDTO> getAllAccounts() {
         return accountRepository.findAll().stream()
-                .map(account -> new AccountDTO(account.getId(), account.getOwnerLogin(), account.getBalance()))
+                .map(AccountMapper::toDTO)
                 .collect(Collectors.toList());
     }
 }

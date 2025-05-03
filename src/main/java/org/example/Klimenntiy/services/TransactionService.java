@@ -7,6 +7,7 @@ import org.example.Klimenntiy.entities.User;
 import org.example.Klimenntiy.exceptions.AccountNotFoundException;
 import org.example.Klimenntiy.exceptions.InsufficientFundsException;
 import org.example.Klimenntiy.exceptions.UserNotFoundException;
+import org.example.Klimenntiy.mappers.TransactionHistoryMapper;
 import org.example.Klimenntiy.repository.AccountRepository;
 import org.example.Klimenntiy.repository.TransactionHistoryRepository;
 import org.example.Klimenntiy.repository.UserRepository;
@@ -25,7 +26,9 @@ public class TransactionService {
     private final TransactionHistoryRepository transactionHistoryRepository;
 
     @Autowired
-    public TransactionService(AccountRepository accountRepository, UserRepository userRepository, TransactionHistoryRepository transactionHistoryRepository) {
+    public TransactionService(AccountRepository accountRepository,
+                              UserRepository userRepository,
+                              TransactionHistoryRepository transactionHistoryRepository) {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.transactionHistoryRepository = transactionHistoryRepository;
@@ -34,14 +37,14 @@ public class TransactionService {
     @Transactional
     public void transferMoney(Long senderId, Long receiverId, double amount) {
         Account sender = accountRepository.findById(senderId)
-                .orElseThrow(() -> new AccountNotFoundException("Account not found."));
+                .orElseThrow(() -> new AccountNotFoundException("Sender account not found."));
         Account receiver = accountRepository.findById(receiverId)
-                .orElseThrow(() -> new AccountNotFoundException("Account not found."));
+                .orElseThrow(() -> new AccountNotFoundException("Receiver account not found."));
 
         User senderUser = userRepository.findByLogin(sender.getOwnerLogin())
-                .orElseThrow(() -> new UserNotFoundException("User not found."));
+                .orElseThrow(() -> new UserNotFoundException("Sender user not found."));
         User receiverUser = userRepository.findByLogin(receiver.getOwnerLogin())
-                .orElseThrow(() -> new UserNotFoundException("User not found."));
+                .orElseThrow(() -> new UserNotFoundException("Receiver user not found."));
 
         double commissionRate = determineCommissionRate(senderUser, receiverUser);
         double commission = amount * commissionRate;
@@ -71,7 +74,7 @@ public class TransactionService {
                 .orElseThrow(() -> new AccountNotFoundException("Account not found."));
 
         return account.getTransactions().stream()
-                .map(tx -> new TransactionHistoryDTO(tx.getType(), tx.getAmount(), tx.getNewBalance()))
+                .map(TransactionHistoryMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -81,8 +84,8 @@ public class TransactionService {
                 .orElseThrow(() -> new AccountNotFoundException("Account not found."));
 
         return account.getTransactions().stream()
-                .filter(tx -> (type == null || tx.getType().equalsIgnoreCase(type)))
-                .map(tx -> new TransactionHistoryDTO(tx.getType(), tx.getAmount(), tx.getNewBalance()))
+                .filter(tx -> type == null || tx.getType().equalsIgnoreCase(type))
+                .map(TransactionHistoryMapper::toDTO)
                 .collect(Collectors.toList());
     }
 }
