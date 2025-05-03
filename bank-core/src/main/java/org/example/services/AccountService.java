@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Service class for managing bank accounts.
+ * Service class for handling bank account operations.
  */
 @RequiredArgsConstructor
 public class AccountService {
@@ -22,22 +22,26 @@ public class AccountService {
     private final UserRepository userRepository;
 
     /**
-     * Creates a new bank account for a user.
+     * Creates a new bank account for the specified user.
      *
-     * @param login User's login
+     * @param login User's login identifier.
+     * @throws AccountNotFoundException if the user does not exist.
      */
     public void createAccount(String login) {
-        if (userRepository.exists(login)) {
+        if (!userRepository.exists(login)) {
             throw new AccountNotFoundException("User not found.");
         }
         accountRepository.addAccount(new Account(login));
     }
 
     /**
-     * Deposits money into an account.
+     * Deposits a specified amount into an account.
      *
-     * @param accountId Account ID
-     * @param amount    Deposit amount
+     * @param accountId The account ID.
+     * @param amount    The amount to deposit.
+     * @return A success result with the updated balance.
+     * @throws InvalidAmountException if the deposit amount is non-positive.
+     * @throws AccountNotFoundException if the account does not exist.
      */
     public SuccessResult depositMoney(String accountId, double amount) {
         if (amount <= 0) {
@@ -55,34 +59,41 @@ public class AccountService {
         return new SuccessResult("Deposit successful! New balance: " + account.getBalance());
     }
 
-
     /**
-     * Withdraws money from an account if there are sufficient funds.
+     * Withdraws a specified amount from an account if sufficient funds are available.
      *
-     * @param accountId Account ID
-     * @param amount    Withdrawal amount
+     * @param accountId The account ID.
+     * @param amount    The amount to withdraw.
+     * @return A success result with the updated balance.
+     * @throws InvalidAmountException if the withdrawal amount is non-positive.
+     * @throws AccountNotFoundException if the account does not exist.
+     * @throws InsufficientFundsException if the account lacks sufficient funds.
      */
     public SuccessResult withdrawMoney(String accountId, double amount) {
         if (amount <= 0) {
             throw new InvalidAmountException("Withdrawal amount must be greater than zero.");
         }
+
         Account account = accountRepository.getAccount(accountId);
         if (account == null) {
             throw new AccountNotFoundException("Account not found.");
         }
+
         if (amount > account.getBalance()) {
             throw new InsufficientFundsException("Insufficient funds!");
         }
+
         account.withdraw(amount);
         accountRepository.saveAccount(account);
+
         return new SuccessResult("Withdrawal successful! New balance: " + account.getBalance());
     }
 
-
     /**
-     * Displays the account balance.
+     * Retrieves and prints the balance of the specified account.
      *
-     * @param accountId Account ID
+     * @param accountId The account ID.
+     * @throws AccountNotFoundException if the account does not exist.
      */
     public void showBalance(String accountId) {
         Account account = accountRepository.getAccount(accountId);
@@ -93,15 +104,17 @@ public class AccountService {
     }
 
     /**
-     * Retrieves all accounts associated with a user.
+     * Retrieves all accounts associated with a specific user.
      *
-     * @param login User's login
-     * @return List of AccountDTO objects
+     * @param login The user's login identifier.
+     * @return A list of AccountDTO objects.
+     * @throws AccountNotFoundException if the user does not exist.
      */
     public List<AccountDTO> getUserAccounts(String login) {
-        if (userRepository.exists(login)) {
+        if (!userRepository.exists(login)) {
             throw new AccountNotFoundException("User not found.");
         }
+
         return accountRepository.getAccountsByUser(login).stream()
                 .map(account -> new AccountDTO(account.getId(), account.getOwnerLogin(), account.getBalance()))
                 .collect(Collectors.toList());

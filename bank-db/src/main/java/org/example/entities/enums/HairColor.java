@@ -1,4 +1,4 @@
-package org.example.enums;
+package org.example.entities.enums;
 
 /**
  * Represents different hair colors a user can have.

@@ -6,8 +6,8 @@ import org.example.dto.UserDTO;
 import org.example.services.UserService;
 import org.example.services.AccountService;
 import org.example.services.TransactionService;
-import org.example.enums.Gender;
-import org.example.enums.HairColor;
+import org.example.entities.enums.Gender;
+import org.example.entities.enums.HairColor;
 
 import java.util.List;
 import java.util.Scanner;
