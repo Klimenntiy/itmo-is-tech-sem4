@@ -91,12 +91,4 @@ public class AdminController {
         String response = adminService.createAccount(token, ownerId);
         return ResponseEntity.ok(response);
     }
-
-
-    @Operation(summary = "Logout current user")
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
-        adminService.logout();
-        return ResponseEntity.ok().build();
-    }
 }

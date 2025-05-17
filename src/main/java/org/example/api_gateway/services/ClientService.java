@@ -5,6 +5,7 @@ import org.example.api_gateway.models.dto.AccountOperationRequest;
 import org.example.api_gateway.models.dto.UserDTO;
 import org.example.api_gateway.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -14,13 +15,17 @@ import org.springframework.web.client.RestTemplate;
 public class ClientService {
     private final RestTemplate restTemplate;
     private final UserRepository userRepository;
+    private final AccountClientService accountClientService;
+    private final UserClientService userClientService;
 
     @Value("${app.mainapp.url}")
     private String mainAppUrl;
 
-    public ClientService(RestTemplate restTemplate, UserRepository userRepository) {
+    public ClientService(RestTemplate restTemplate, UserRepository userRepository, AccountClientService accountClientService, UserClientService userClientService) {
         this.restTemplate = restTemplate;
         this.userRepository = userRepository;
+        this.accountClientService = accountClientService;
+        this.userClientService = userClientService;
     }
 
     private HttpHeaders createAuthHeaders(Authentication auth) {
@@ -40,68 +45,30 @@ public class ClientService {
     }
 
     public UserDTO getMyInfo(Authentication auth) {
-        String url = mainAppUrl + "/users/login/" + auth.getName();
-        return restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                new HttpEntity<>(createAuthHeaders(auth)),
-                UserDTO.class
-        ).getBody();
+       return accountClientService._getMyInfo(auth);
     }
 
     public AccountDTO[] getMyAccounts(Authentication auth) {
-        Long userId = getUserIdFromAuth(auth);
-        String url = mainAppUrl + "/accounts/user/id/" + userId;
-        return restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                new HttpEntity<>(createAuthHeaders(auth)),
-                AccountDTO[].class
-        ).getBody();
+        return accountClientService._getMyAccounts(auth);
     }
 
     public AccountDTO getAccountDetails(Authentication auth, Long accountId) {
-        String url = mainAppUrl + "/accounts/" + accountId;
-        return restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                new HttpEntity<>(createAuthHeaders(auth)),
-                AccountDTO.class
-        ).getBody();
+            return accountClientService._getAccountDetails(auth, accountId);
     }
 
     public void addFriend(Authentication auth, String friendLogin) {
-        String url = mainAppUrl + "/users/" + auth.getName() + "/friends/" + friendLogin;
-        restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                new HttpEntity<>(createAuthHeaders(auth)),
-                Void.class
-        );
+            userClientService._addFriend(auth, friendLogin);
     }
 
     public void removeFriend(Authentication auth, String friendLogin) {
-        String url = mainAppUrl + "/users/" + auth.getName() + "/friends/" + friendLogin;
-        restTemplate.exchange(
-                url,
-                HttpMethod.DELETE,
-                new HttpEntity<>(createAuthHeaders(auth)),
-                Void.class
-        );
+            userClientService._removeFriend(auth, friendLogin);
     }
 
     public void performOperation(Authentication auth, Long accountId, AccountOperationRequest request) {
         if (!accountId.equals(request.getAccountId())) {
             throw new IllegalArgumentException("Account ID in path and body must match");
         }
-
-        String url = mainAppUrl + "/accounts/" + accountId + "/operations";
-        restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                new HttpEntity<>(request, createAuthHeaders(auth)),
-                Void.class
-        );
+        accountClientService._performOperation(auth, accountId, request);
     }
 
 }

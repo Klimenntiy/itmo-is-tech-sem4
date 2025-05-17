@@ -20,4 +20,14 @@ public class UserProfileDTO {
     private Gender gender;
     private HairColor hairColor;
     private Set<String> friends;
+
+    public UserProfileDTO(UserDTO userDTO) {
+        this.userId = userDTO.getId();
+        this.login = userDTO.getLogin();
+        this.name = userDTO.getName();
+        this.age = userDTO.getAge();
+        this.gender = userDTO.getGender();
+        this.hairColor = userDTO.getHairColor();
+        this.friends = null;
+    }
 }

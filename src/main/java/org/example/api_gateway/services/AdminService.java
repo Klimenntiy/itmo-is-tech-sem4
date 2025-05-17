@@ -17,17 +17,22 @@ public class AdminService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RestTemplate restTemplate;
+    private final UserClientService userClientService;
+    private final AccountClientService accountClientService;
 
     @Value("${app.mainapp.url}")
     private String mainAppUrl;
 
     public AdminService(UserRepository userRepository,
                         PasswordEncoder passwordEncoder,
-                        RestTemplate restTemplate) {
+                        RestTemplate restTemplate, UserClientService userClientService, AccountClientService accountClientService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.restTemplate = restTemplate;
+        this.userClientService = userClientService;
+        this.accountClientService = accountClientService;
     }
+
 
     private HttpHeaders createHeaders(String token) {
         HttpHeaders headers = new HttpHeaders();
@@ -59,8 +64,6 @@ public class AdminService {
                 .hairColor(user.getHairColor())
                 .build();
 
-
-        String profileUrl = mainAppUrl + "/users/create";
         UserProfileDTO profileDTO = UserProfileDTO.builder()
                 .userId(user.getId())
                 .login(user.getLogin())
@@ -70,16 +73,7 @@ public class AdminService {
                 .hairColor(user.getHairColor())
                 .build();
 
-        ResponseEntity<Void> profileResponse = restTemplate.exchange(
-                profileUrl,
-                HttpMethod.POST,
-                new HttpEntity<>(profileDTO, createHeaders(token)),
-                Void.class
-        );
-
-        if (!profileResponse.getStatusCode().is2xxSuccessful()) {
-            throw new RuntimeException("Ошибка при создании профиля пользователя");
-        }
+        userClientService._registerFullUser(request, token, profileDTO);
 
         return userDTO;
     }
@@ -104,69 +98,33 @@ public class AdminService {
         String url = urlBuilder.toString();
 
         HttpEntity<Void> entity = new HttpEntity<>(createHeaders(token));
-        return restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                UserDTO[].class
-        ).getBody();
+        return userClientService._getUsers(token, gender, hairColor, url, entity);
     }
 
     public UserDTO getUserById(String token, Long id) {
         String url = mainAppUrl + "/users/" + id;
-        return restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                new HttpEntity<>(createHeaders(token)),
-                UserDTO.class
-        ).getBody();
+        return userClientService._getUserById(token, id, url);
     }
+
 
     public AccountDTO[] getAllAccounts(String token) {
         String url = mainAppUrl + "/accounts/all";
-        return restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                new HttpEntity<>(createHeaders(token)),
-                AccountDTO[].class
-        ).getBody();
+        return accountClientService._getAllAccounts(token, url);
     }
 
     public AccountDTO[] getUserAccounts(String token, Long userId) {
         String url = mainAppUrl + "/accounts/user/id/" + userId;
-        return restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                new HttpEntity<>(createHeaders(token)),
-                AccountDTO[].class
-        ).getBody();
+        return accountClientService._getUserAccounts(token, userId, url);
     }
 
     public AccountDTO getAccountDetails(String token, Long accountId) {
         String url = mainAppUrl + "/accounts/" + accountId;
-        return restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                new HttpEntity<>(createHeaders(token)),
-                AccountDTO.class
-        ).getBody();
+        return accountClientService._getAccountDetails(token, accountId, url);
     }
 
     public String createAccount(String token, Long ownerId) {
         String url = mainAppUrl + "/accounts/create/" + ownerId;
-
-        return restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                new HttpEntity<>(null, createHeaders(token)),
-                String.class
-        ).getBody();
-    }
-
-
-
-    public void logout() {
-
+        return accountClientService._createAccount(token, ownerId, url);
     }
 
 }
