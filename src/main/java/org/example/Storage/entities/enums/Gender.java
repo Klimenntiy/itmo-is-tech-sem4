@@ -1,4 +1,4 @@
-package org.example.Klimenntiy.entities.enums;
+package org.example.Storage.entities.enums;
 
 public enum Gender {
     MALE,
